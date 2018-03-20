@@ -6,7 +6,7 @@ node {
     withMaven(
             maven: 'maven', 
             mavenSettingsConfig: '5af0fc56-3fce-4a70-add1-6d39b7fdc2fd') {
-      sh "mvn -f static-code-analysis-example/pom.xml clean package checkstyle:checkstyle findbugs:findbugs cobertura:cobertura pmd:pmd -DskipDockerBuild=true"
+      sh "mvn -f pom.xml clean package checkstyle:checkstyle findbugs:findbugs cobertura:cobertura pmd:pmd -DskipDockerBuild=true"
 
     }
     step([$class: 'JUnitResultArchiver', testResults: '**/target/**/TEST-*.xml'])    
