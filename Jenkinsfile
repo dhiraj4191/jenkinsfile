@@ -1,23 +1,17 @@
 node {
     
-    stage("checkout"){
-        checkout scm
-    }
-
-    stage("Build"){
-
-        withMaven(
-            // Maven installation declared in the Jenkins "Global Tool Configuration"
-            maven: 'maven',
-            // Maven settings.xml file defined with the Jenkins Config File Provider Plugin
-            // Maven settings and global settings can also be defined in Jenkins Global Tools Configuration
-            mavenSettingsConfig: '5af0fc56-3fce-4a70-add1-6d39b7fdc2fd',
-            mavenLocalRepo: '.repository') {
-     
-          // Run the maven build
-          sh "mvn clean install"
-     
-        }
+    stage "Checkout"
+    checkout scm 
+    stage "Build"
+    withMaven(
+            maven: 'maven', 
+            mavenSettingsConfig: '5af0fc56-3fce-4a70-add1-6d39b7fdc2fd') {
+      sh "mvn -f static-code-analysis-example/pom.xml clean package checkstyle:checkstyle findbugs:findbugs cobertura:cobertura pmd:pmd -DskipDockerBuild=true"
 
     }
+    step([$class: 'JUnitResultArchiver', testResults: '**/target/**/TEST-*.xml'])    
+
+    step([$class: 'hudson.plugins.checkstyle.CheckStylePublisher', pattern: '**/target/checkstyle-result.xml', unstableTotalAll:'0',unhealthy:'100', healthy:'100'])
+    step([$class: 'PmdPublisher', pattern: '**/target/pmd.xml'])
+    step([$class: 'FindBugsPublisher', pattern: '**/findbugsXml.xml'])
 }
